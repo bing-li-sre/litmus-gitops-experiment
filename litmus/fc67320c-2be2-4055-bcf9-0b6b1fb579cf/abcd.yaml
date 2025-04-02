@@ -14,7 +14,7 @@ spec:
     parameters:
     - name: adminModeNamespace
       value: litmus
-  entrypoint: abc
+  entrypoint: abcd
   podGC:
     strategy: OnWorkflowCompletion
   securityContext:
@@ -24,7 +24,7 @@ spec:
   templates:
   - inputs: {}
     metadata: {}
-    name: abc
+    name: abcd
     outputs: {}
     steps:
     - - arguments: {}
@@ -199,7 +199,7 @@ spec:
               namespace: "{{workflow.parameters.adminModeNamespace}}"
               labels:
                 workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: abc
+                workflow_name: abcd
               annotations:
                 probeRef: '[{"name":"nginx-health-check","mode":"SOT"}]'
               generateName: k6-loadgen-clone-tlq
