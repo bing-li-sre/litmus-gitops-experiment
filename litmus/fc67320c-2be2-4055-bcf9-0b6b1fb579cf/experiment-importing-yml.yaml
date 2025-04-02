@@ -49,9 +49,6 @@ spec:
           name: pod-delete-8de
           template: pod-delete-8de
       - - arguments: {}
-          name: pod-dns-error-eph
-          template: pod-dns-error-eph
-      - - arguments: {}
           name: cleanup-chaos-resources
           template: cleanup-chaos-resources
     - container:
