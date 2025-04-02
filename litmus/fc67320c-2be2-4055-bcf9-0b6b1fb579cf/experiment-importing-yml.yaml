@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: e357accd-0ec6-4aa9-a219-d46a50639c04
+    revision_id: bdd58008-1459-4f54-9daf-eba4d75ecf01
     workflow_id: 3a52f7ac-30ca-4e60-8f83-652435aaf03a
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: experiment-importing-yml
@@ -12,12 +12,13 @@ metadata:
 spec:
   concurrencyPolicy: Forbid
   schedule: 0 0/1 * * *
+  suspend: true
   timezone: Australia/Melbourne
   workflowMetadata:
     creationTimestamp: null
     labels:
       infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-      revision_id: e357accd-0ec6-4aa9-a219-d46a50639c04
+      revision_id: bdd58008-1459-4f54-9daf-eba4d75ecf01
       workflow_id: 3a52f7ac-30ca-4e60-8f83-652435aaf03a
       workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   workflowSpec:
@@ -47,6 +48,9 @@ spec:
       - - arguments: {}
           name: pod-delete-8de
           template: pod-delete-8de
+      - - arguments: {}
+          name: pod-dns-error-eph
+          template: pod-dns-error-eph
       - - arguments: {}
           name: cleanup-chaos-resources
           template: cleanup-chaos-resources
@@ -379,6 +383,162 @@ spec:
                     app.kubernetes.io/part-of: litmus
                     app.kubernetes.io/component: experiment-job
                     app.kubernetes.io/version: 3.16.0
+        - name: pod-dns-error-eph
+          path: /tmp/pod-dns-error-eph.yaml
+          raw:
+            data: |
+              apiVersion: litmuschaos.io/v1alpha1
+              description:
+                message: |
+                  Pod DNS Error injects DNS failure/error in target pod containers
+              kind: ChaosExperiment
+              metadata:
+                name: pod-dns-error
+                labels:
+                  name: pod-dns-error
+                  app.kubernetes.io/part-of: litmus
+                  app.kubernetes.io/component: chaosexperiment
+                  app.kubernetes.io/version: 3.16.0
+              spec:
+                definition:
+                  scope: Namespaced
+                  permissions:
+                    - apiGroups:
+                        - ""
+                      resources:
+                        - pods
+                      verbs:
+                        - create
+                        - delete
+                        - get
+                        - list
+                        - patch
+                        - update
+                        - deletecollection
+                    - apiGroups:
+                        - ""
+                      resources:
+                        - events
+                      verbs:
+                        - create
+                        - get
+                        - list
+                        - patch
+                        - update
+                    - apiGroups:
+                        - ""
+                      resources:
+                        - configmaps
+                      verbs:
+                        - get
+                        - list
+                    - apiGroups:
+                        - ""
+                      resources:
+                        - pods/log
+                      verbs:
+                        - get
+                        - list
+                        - watch
+                    - apiGroups:
+                        - ""
+                      resources:
+                        - pods/exec
+                      verbs:
+                        - get
+                        - list
+                        - create
+                    - apiGroups:
+                        - apps
+                      resources:
+                        - deployments
+                        - statefulsets
+                        - replicasets
+                        - daemonsets
+                      verbs:
+                        - list
+                        - get
+                    - apiGroups:
+                        - apps.openshift.io
+                      resources:
+                        - deploymentconfigs
+                      verbs:
+                        - list
+                        - get
+                    - apiGroups:
+                        - ""
+                      resources:
+                        - replicationcontrollers
+                      verbs:
+                        - get
+                        - list
+                    - apiGroups:
+                        - argoproj.io
+                      resources:
+                        - rollouts
+                      verbs:
+                        - list
+                        - get
+                    - apiGroups:
+                        - batch
+                      resources:
+                        - jobs
+                      verbs:
+                        - create
+                        - list
+                        - get
+                        - delete
+                        - deletecollection
+                    - apiGroups:
+                        - litmuschaos.io
+                      resources:
+                        - chaosengines
+                        - chaosexperiments
+                        - chaosresults
+                      verbs:
+                        - create
+                        - list
+                        - get
+                        - patch
+                        - update
+                        - delete
+                  image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
+                  args:
+                    - -c
+                    - ./experiments -name pod-dns-error
+                  command:
+                    - /bin/bash
+                  env:
+                    - name: TARGET_CONTAINER
+                      value: ""
+                    - name: LIB_IMAGE
+                      value: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
+                    - name: DEFAULT_HEALTH_CHECK
+                      value: "false"
+                    - name: TOTAL_CHAOS_DURATION
+                      value: "60"
+                    - name: RAMP_TIME
+                      value: ""
+                    - name: PODS_AFFECTED_PERC
+                      value: ""
+                    - name: TARGET_PODS
+                      value: ""
+                    - name: CONTAINER_RUNTIME
+                      value: containerd
+                    - name: SOCKET_PATH
+                      value: /run/containerd/containerd.sock
+                    - name: SEQUENCE
+                      value: parallel
+                    - name: TARGET_HOSTNAMES
+                      value: ""
+                    - name: MATCH_SCHEME
+                      value: exact
+                  labels:
+                    experiment: pod-dns-error
+                    app.kubernetes.io/part-of: litmus
+                    app.kubernetes.io/component: experiment-job
+                    app.kubernetes.io/runtime-api-usage: "true"
+                    app.kubernetes.io/version: 3.16.0
       metadata: {}
       name: install-chaos-faults
       outputs: {}
@@ -526,6 +686,71 @@ spec:
         labels:
           weight: "10"
       name: pod-delete-8de
+      outputs: {}
+    - container:
+        args:
+        - -file=/tmp/chaosengine-pod-dns-error-eph.yaml
+        - -saveName=/tmp/engine-name
+        image: docker.io/litmuschaos/litmus-checker:2.11.0
+        name: ""
+        resources: {}
+      inputs:
+        artifacts:
+        - name: pod-dns-error-eph
+          path: /tmp/chaosengine-pod-dns-error-eph.yaml
+          raw:
+            data: |
+              apiVersion: litmuschaos.io/v1alpha1
+              kind: ChaosEngine
+              metadata:
+                namespace: "{{workflow.parameters.adminModeNamespace}}"
+                labels:
+                  workflow_run_id: "{{ workflow.uid }}"
+                  workflow_name: experiment-importing-yml
+                annotations:
+                  probeRef: '[{"name":"nginx-health-check","mode":"SOT"}]'
+                generateName: pod-dns-error-eph
+              spec:
+                appinfo:
+                  appns: default
+                  applabel: ""
+                  appkind: deployment
+                engineState: active
+                auxiliaryAppInfo: ""
+                chaosServiceAccount: litmus-admin
+                experiments:
+                  - name: pod-dns-error
+                    spec:
+                      components:
+                        env:
+                          - name: TARGET_CONTAINER
+                            value: ""
+                          - name: LIB_IMAGE
+                            value: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
+                          - name: DEFAULT_HEALTH_CHECK
+                            value: "false"
+                          - name: TOTAL_CHAOS_DURATION
+                            value: "60"
+                          - name: RAMP_TIME
+                            value: ""
+                          - name: PODS_AFFECTED_PERC
+                            value: ""
+                          - name: TARGET_PODS
+                            value: ""
+                          - name: CONTAINER_RUNTIME
+                            value: containerd
+                          - name: SOCKET_PATH
+                            value: /run/containerd/containerd.sock
+                          - name: SEQUENCE
+                            value: parallel
+                          - name: TARGET_HOSTNAMES
+                            value: ""
+                          - name: MATCH_SCHEME
+                            value: exact
+      metadata:
+        labels:
+          weight: "10"
+      name: pod-dns-error-eph
       outputs: {}
 status:
   active: null
