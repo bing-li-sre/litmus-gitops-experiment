@@ -7,7 +7,7 @@ metadata:
     revision_id: 5f507847-33a3-4064-9eb7-f42a3a63f2bd
     workflow_id: a1e7bce3-915d-4042-9c3b-40f93abaa2a1
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-  name: abc
+  name: abcd
   namespace: litmus
 spec:
   arguments:
