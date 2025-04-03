@@ -7,14 +7,14 @@ metadata:
     revision_id: 58626eaa-d981-46b3-b66c-f6149ba205bf
     workflow_id: 70fc6b1d-532b-4167-8c60-e125ebf8a80f
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-  name: nginx-experiement-1
+  name: nginx-experiement-0
   namespace: litmus
 spec:
   arguments:
     parameters:
     - name: adminModeNamespace
       value: litmus
-  entrypoint: nginx-experiement-1
+  entrypoint: nginx-experiement-0
   podGC:
     strategy: OnWorkflowCompletion
   securityContext:
@@ -24,7 +24,7 @@ spec:
   templates:
   - inputs: {}
     metadata: {}
-    name: nginx-experiement-1
+    name: nginx-experiement-0
     outputs: {}
     steps:
     - - arguments: {}
@@ -534,7 +534,7 @@ spec:
               namespace: "{{workflow.parameters.adminModeNamespace}}"
               labels:
                 workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: nginx-experiement-1
+                workflow_name: nginx-experiement-0
               annotations:
                 probeRef: '[{"name":"nginx-health-check","mode":"Continuous"}]'
               generateName: pod-http-latency-akj
@@ -606,7 +606,7 @@ spec:
               namespace: "{{workflow.parameters.adminModeNamespace}}"
               labels:
                 workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: nginx-experiement-1
+                workflow_name: nginx-experiement-0
               annotations:
                 probeRef: '[{"name":"nginx-health-check","mode":"Continuous"}]'
               generateName: pod-delete-8de
@@ -666,7 +666,7 @@ spec:
               namespace: "{{workflow.parameters.adminModeNamespace}}"
               labels:
                 workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: nginx-experiement-1
+                workflow_name: nginx-experiement-0
               annotations:
                 probeRef: '[{"name":"nginx-health-check","mode":"SOT"}]'
               generateName: node-cpu-hog-5w8
