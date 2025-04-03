@@ -4,17 +4,17 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: 58626eaa-d981-46b3-b66c-f6149ba205bf
+    revision_id: 67435dfa-c00c-4441-a8b0-2146933808fa
     workflow_id: 70fc6b1d-532b-4167-8c60-e125ebf8a80f
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-  name: nginx-experiement-0
+  name: nginx-experiement-1
   namespace: litmus
 spec:
   arguments:
     parameters:
     - name: adminModeNamespace
       value: litmus
-  entrypoint: nginx-experiement-0
+  entrypoint: nginx-experiement-1
   podGC:
     strategy: OnWorkflowCompletion
   securityContext:
@@ -24,7 +24,7 @@ spec:
   templates:
   - inputs: {}
     metadata: {}
-    name: nginx-experiement-0
+    name: nginx-experiement-1
     outputs: {}
     steps:
     - - arguments: {}
@@ -36,9 +36,6 @@ spec:
     - - arguments: {}
         name: pod-delete-8de
         template: pod-delete-8de
-    - - arguments: {}
-        name: node-cpu-hog-5w8
-        template: node-cpu-hog-5w8
     - - arguments: {}
         name: cleanup-chaos-resources
         template: cleanup-chaos-resources
@@ -371,134 +368,6 @@ spec:
                   app.kubernetes.io/part-of: litmus
                   app.kubernetes.io/component: experiment-job
                   app.kubernetes.io/version: 3.16.0
-      - name: node-cpu-hog-5w8
-        path: /tmp/node-cpu-hog-5w8.yaml
-        raw:
-          data: |
-            apiVersion: litmuschaos.io/v1alpha1
-            description:
-              message: |
-                Give a CPU spike on a node belonging to a deployment
-            kind: ChaosExperiment
-            metadata:
-              name: node-cpu-hog
-              labels:
-                name: node-cpu-hog
-                app.kubernetes.io/part-of: litmus
-                app.kubernetes.io/component: chaosexperiment
-                app.kubernetes.io/version: 3.16.0
-            spec:
-              definition:
-                scope: Cluster
-                permissions:
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - pods
-                    verbs:
-                      - create
-                      - delete
-                      - get
-                      - list
-                      - patch
-                      - update
-                      - deletecollection
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - events
-                    verbs:
-                      - create
-                      - get
-                      - list
-                      - patch
-                      - update
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - configmaps
-                    verbs:
-                      - get
-                      - list
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - pods/log
-                    verbs:
-                      - get
-                      - list
-                      - watch
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - pods/exec
-                    verbs:
-                      - get
-                      - list
-                      - create
-                  - apiGroups:
-                      - batch
-                    resources:
-                      - jobs
-                    verbs:
-                      - create
-                      - list
-                      - get
-                      - delete
-                      - deletecollection
-                  - apiGroups:
-                      - litmuschaos.io
-                    resources:
-                      - chaosengines
-                      - chaosexperiments
-                      - chaosresults
-                    verbs:
-                      - create
-                      - list
-                      - get
-                      - patch
-                      - update
-                      - delete
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - nodes
-                    verbs:
-                      - get
-                      - list
-                image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
-                imagePullPolicy: Always
-                args:
-                  - -c
-                  - ./experiments -name node-cpu-hog
-                command:
-                  - /bin/bash
-                env:
-                  - name: TOTAL_CHAOS_DURATION
-                    value: "60"
-                  - name: RAMP_TIME
-                    value: ""
-                  - name: NODE_CPU_CORE
-                    value: ""
-                  - name: CPU_LOAD
-                    value: "100"
-                  - name: TARGET_NODES
-                    value: ""
-                  - name: NODE_LABEL
-                    value: ""
-                  - name: LIB_IMAGE
-                    value: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
-                  - name: NODES_AFFECTED_PERC
-                    value: ""
-                  - name: DEFAULT_HEALTH_CHECK
-                    value: "false"
-                  - name: SEQUENCE
-                    value: parallel
-                labels:
-                  name: node-cpu-hog
-                  app.kubernetes.io/part-of: litmus
-                  app.kubernetes.io/component: experiment-job
-                  app.kubernetes.io/version: 3.16.0
     metadata: {}
     name: install-chaos-faults
     outputs: {}
@@ -534,7 +403,7 @@ spec:
               namespace: "{{workflow.parameters.adminModeNamespace}}"
               labels:
                 workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: nginx-experiement-0
+                workflow_name: nginx-experiement-1
               annotations:
                 probeRef: '[{"name":"nginx-health-check","mode":"Continuous"}]'
               generateName: pod-http-latency-akj
@@ -606,7 +475,7 @@ spec:
               namespace: "{{workflow.parameters.adminModeNamespace}}"
               labels:
                 workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: nginx-experiement-0
+                workflow_name: nginx-experiement-1
               annotations:
                 probeRef: '[{"name":"nginx-health-check","mode":"Continuous"}]'
               generateName: pod-delete-8de
@@ -646,63 +515,6 @@ spec:
       labels:
         weight: "10"
     name: pod-delete-8de
-    outputs: {}
-  - container:
-      args:
-      - -file=/tmp/chaosengine-node-cpu-hog-5w8.yaml
-      - -saveName=/tmp/engine-name
-      image: docker.io/litmuschaos/litmus-checker:2.11.0
-      name: ""
-      resources: {}
-    inputs:
-      artifacts:
-      - name: node-cpu-hog-5w8
-        path: /tmp/chaosengine-node-cpu-hog-5w8.yaml
-        raw:
-          data: |
-            apiVersion: litmuschaos.io/v1alpha1
-            kind: ChaosEngine
-            metadata:
-              namespace: "{{workflow.parameters.adminModeNamespace}}"
-              labels:
-                workflow_run_id: "{{ workflow.uid }}"
-                workflow_name: nginx-experiement-0
-              annotations:
-                probeRef: '[{"name":"nginx-health-check","mode":"SOT"}]'
-              generateName: node-cpu-hog-5w8
-            spec:
-              engineState: active
-              auxiliaryAppInfo: ""
-              chaosServiceAccount: litmus-admin
-              experiments:
-                - name: node-cpu-hog
-                  spec:
-                    components:
-                      env:
-                        - name: TOTAL_CHAOS_DURATION
-                          value: "60"
-                        - name: RAMP_TIME
-                          value: ""
-                        - name: NODE_CPU_CORE
-                          value: ""
-                        - name: CPU_LOAD
-                          value: "100"
-                        - name: TARGET_NODES
-                          value: ""
-                        - name: NODE_LABEL
-                          value: ""
-                        - name: LIB_IMAGE
-                          value: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
-                        - name: NODES_AFFECTED_PERC
-                          value: ""
-                        - name: DEFAULT_HEALTH_CHECK
-                          value: "false"
-                        - name: SEQUENCE
-                          value: parallel
-    metadata:
-      labels:
-        weight: "10"
-    name: node-cpu-hog-5w8
     outputs: {}
 status:
   finishedAt: null
