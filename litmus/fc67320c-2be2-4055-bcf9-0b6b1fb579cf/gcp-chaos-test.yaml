@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: 2de28ece-9f21-49f3-a121-e14c53fc6fb0
+    revision_id: bee89e03-5a14-4d6f-a6fd-7de80137fb02
     workflow_id: 07d4bf98-15fd-4b57-a9f6-321500899511
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: gcp-chaos-test
@@ -31,8 +31,8 @@ spec:
         name: install-chaos-faults
         template: install-chaos-faults
     - - arguments: {}
-        name: gcp-vm-process-kill-4nj
-        template: gcp-vm-process-kill-4nj
+        name: gcp-vm-instance-stop-93q
+        template: gcp-vm-instance-stop-93q
     - - arguments: {}
         name: cleanup-chaos-resources
         template: cleanup-chaos-resources
@@ -48,22 +48,23 @@ spec:
       resources: {}
     inputs:
       artifacts:
-      - name: gcp-vm-process-kill-4nj
-        path: /tmp/gcp-vm-process-kill-4nj.yaml
+      - name: gcp-vm-instance-stop-93q
+        path: /tmp/gcp-vm-instance-stop-93q.yaml
         raw:
           data: |
             apiVersion: litmuschaos.io/v1alpha1
             description:
-              message: |
-                Kills specified processes on GCP VM instances for a specified duration
+              message: >
+                Stops GCP VM instances and GKE nodes for a specified duration and later
+                restarts them
             kind: ChaosExperiment
             metadata:
-              name: gcp-vm-process-kill
+              name: gcp-vm-instance-stop
               labels:
-                name: gcp-vm-process-kill
+                name: gcp-vm-instance-stop
                 app.kubernetes.io/part-of: litmus
                 app.kubernetes.io/component: chaosexperiment
-                app.kubernetes.io/version: ci
+                app.kubernetes.io/version: 3.16.0
             spec:
               definition:
                 scope: Cluster
@@ -136,46 +137,42 @@ spec:
                     verbs:
                       - get
                       - list
-                image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest
+                image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
                 imagePullPolicy: Always
                 args:
                   - -c
-                  - ./experiments -name gcp-vm-process-kill
+                  - ./experiments -name gcp-vm-instance-stop
                 command:
                   - /bin/bash
                 env:
-                  - name: PROCESS_NAME
-                    value: ""
-                  - name: SIGNAL
-                    value: "9"
                   - name: TOTAL_CHAOS_DURATION
                     value: "30"
                   - name: CHAOS_INTERVAL
                     value: "30"
+                  - name: SEQUENCE
+                    value: parallel
                   - name: RAMP_TIME
+                    value: ""
+                  - name: MANAGED_INSTANCE_GROUP
+                    value: disable
+                  - name: VM_INSTANCE_NAMES
                     value: ""
                   - name: GCP_PROJECT_ID
                     value: ""
-                  - name: INSTANCE_NAME
+                  - name: ZONES
                     value: ""
-                  - name: ZONE_NAME
-                    value: ""
-                  - name: SEQUENCE
-                    value: parallel
                   - name: DEFAULT_HEALTH_CHECK
                     value: "false"
+                  - name: SEQUENCE
+                    value: parallel
                 labels:
-                  name: gcp-vm-process-kill
+                  name: gcp-vm-instance-stop
                   app.kubernetes.io/part-of: litmus
                   app.kubernetes.io/component: experiment-job
-                  app.kubernetes.io/version: ci
+                  app.kubernetes.io/version: 3.16.0
                 secrets:
                   - name: cloud-secret
                     mountPath: /tmp/
-                auxiliaryAppInfo: ""
-                statusCheckTimeouts:
-                  delay: 2
-                  timeout: 180
     metadata: {}
     name: install-chaos-faults
     outputs: {}
@@ -194,15 +191,15 @@ spec:
     outputs: {}
   - container:
       args:
-      - -file=/tmp/chaosengine-gcp-vm-process-kill-4nj.yaml
+      - -file=/tmp/chaosengine-gcp-vm-instance-stop-93q.yaml
       - -saveName=/tmp/engine-name
       image: docker.io/litmuschaos/litmus-checker:2.11.0
       name: ""
       resources: {}
     inputs:
       artifacts:
-      - name: gcp-vm-process-kill-4nj
-        path: /tmp/chaosengine-gcp-vm-process-kill-4nj.yaml
+      - name: gcp-vm-instance-stop-93q
+        path: /tmp/chaosengine-gcp-vm-instance-stop-93q.yaml
         raw:
           data: |
             apiVersion: litmuschaos.io/v1alpha1
@@ -213,40 +210,38 @@ spec:
                 workflow_run_id: "{{ workflow.uid }}"
                 workflow_name: gcp-chaos-test
               annotations:
-                probeRef: '[{"name":"nginx-health-check","mode":"SOT"}]'
-              generateName: gcp-vm-process-kill-4nj
+                probeRef: '[{"name":"check-frontend-access-url-NSC0nrejQmSIC0_rya0Plw","mode":"SOT"}]'
+              generateName: gcp-vm-instance-stop-93q
             spec:
               engineState: active
               chaosServiceAccount: litmus-admin
               experiments:
-                - name: gcp-vm-process-kill
+                - name: gcp-vm-instance-stop
                   spec:
                     components:
                       env:
-                        - name: PROCESS_NAME
-                          value: prometheus
-                        - name: SIGNAL
-                          value: "9"
                         - name: TOTAL_CHAOS_DURATION
                           value: "30"
                         - name: CHAOS_INTERVAL
                           value: "30"
+                        - name: SEQUENCE
+                          value: parallel
                         - name: RAMP_TIME
+                          value: ""
+                        - name: MANAGED_INSTANCE_GROUP
+                          value: disable
+                        - name: VM_INSTANCE_NAMES
                           value: ""
                         - name: GCP_PROJECT_ID
                           value: ""
-                        - name: INSTANCE_NAME
+                        - name: ZONES
                           value: ""
-                        - name: ZONE_NAME
-                          value: ""
-                        - name: SEQUENCE
-                          value: parallel
                         - name: DEFAULT_HEALTH_CHECK
                           value: "false"
     metadata:
       labels:
         weight: "10"
-    name: gcp-vm-process-kill-4nj
+    name: gcp-vm-instance-stop-93q
     outputs: {}
 status:
   finishedAt: null
