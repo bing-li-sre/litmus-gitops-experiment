@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: 9308bd00-b132-493f-9070-caf36f839f3a
+    revision_id: 2de28ece-9f21-49f3-a121-e14c53fc6fb0
     workflow_id: 07d4bf98-15fd-4b57-a9f6-321500899511
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: gcp-chaos-test
@@ -224,7 +224,7 @@ spec:
                     components:
                       env:
                         - name: PROCESS_NAME
-                          value: ""
+                          value: prometheus
                         - name: SIGNAL
                           value: "9"
                         - name: TOTAL_CHAOS_DURATION
