@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: e0388ca8-cba4-4548-b0c9-dd7ca98045a1
+    revision_id: db284488-c3ad-414e-9efe-b6c96722b7f5
     workflow_id: 07d4bf98-15fd-4b57-a9f6-321500899511
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: gcp-chaos-test
@@ -31,8 +31,8 @@ spec:
         name: install-chaos-faults
         template: install-chaos-faults
     - - arguments: {}
-        name: gcp-vm-instance-stop-93q
-        template: gcp-vm-instance-stop-93q
+        name: gcp-vm-instance-stop-5zn
+        template: gcp-vm-instance-stop-5zn
     - - arguments: {}
         name: cleanup-chaos-resources
         template: cleanup-chaos-resources
@@ -48,8 +48,8 @@ spec:
       resources: {}
     inputs:
       artifacts:
-      - name: gcp-vm-instance-stop-93q
-        path: /tmp/gcp-vm-instance-stop-93q.yaml
+      - name: gcp-vm-instance-stop-5zn
+        path: /tmp/gcp-vm-instance-stop-5zn.yaml
         raw:
           data: |
             apiVersion: litmuschaos.io/v1alpha1
@@ -64,7 +64,7 @@ spec:
                 name: gcp-vm-instance-stop
                 app.kubernetes.io/part-of: litmus
                 app.kubernetes.io/component: chaosexperiment
-                app.kubernetes.io/version: 3.16.0
+                app.kubernetes.io/version: ci
             spec:
               definition:
                 scope: Cluster
@@ -137,7 +137,7 @@ spec:
                     verbs:
                       - get
                       - list
-                image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:3.16.0
+                image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest
                 imagePullPolicy: Always
                 args:
                   - -c
@@ -169,10 +169,7 @@ spec:
                   name: gcp-vm-instance-stop
                   app.kubernetes.io/part-of: litmus
                   app.kubernetes.io/component: experiment-job
-                  app.kubernetes.io/version: 3.16.0
-                secrets:
-                  - name: cloud-secret
-                    mountPath: /tmp/
+                  app.kubernetes.io/version: ci
     metadata: {}
     name: install-chaos-faults
     outputs: {}
@@ -191,15 +188,15 @@ spec:
     outputs: {}
   - container:
       args:
-      - -file=/tmp/chaosengine-gcp-vm-instance-stop-93q.yaml
+      - -file=/tmp/chaosengine-gcp-vm-instance-stop-5zn.yaml
       - -saveName=/tmp/engine-name
       image: docker.io/litmuschaos/litmus-checker:2.11.0
       name: ""
       resources: {}
     inputs:
       artifacts:
-      - name: gcp-vm-instance-stop-93q
-        path: /tmp/chaosengine-gcp-vm-instance-stop-93q.yaml
+      - name: gcp-vm-instance-stop-5zn
+        path: /tmp/chaosengine-gcp-vm-instance-stop-5zn.yaml
         raw:
           data: |
             apiVersion: litmuschaos.io/v1alpha1
@@ -210,8 +207,8 @@ spec:
                 workflow_run_id: "{{ workflow.uid }}"
                 workflow_name: gcp-chaos-test
               annotations:
-                probeRef: '[{"name":"check-frontend-access-url-NSC0nrejQmSIC0_rya0Plw","mode":"SOT"}]'
-              generateName: gcp-vm-instance-stop-93q
+                probeRef: '[{"name":"httpd-health-check","mode":"SOT"}]'
+              generateName: gcp-vm-instance-stop-5zn
             spec:
               engineState: active
               chaosServiceAccount: litmus-admin
@@ -219,6 +216,8 @@ spec:
                 - name: gcp-vm-instance-stop
                   spec:
                     components:
+                      nodeSelector:
+                        iam.gke.io/gke-metadata-server-enabled: "true"
                       env:
                         - name: TOTAL_CHAOS_DURATION
                           value: "30"
@@ -241,7 +240,7 @@ spec:
     metadata:
       labels:
         weight: "10"
-    name: gcp-vm-instance-stop-93q
+    name: gcp-vm-instance-stop-5zn
     outputs: {}
 status:
   finishedAt: null
