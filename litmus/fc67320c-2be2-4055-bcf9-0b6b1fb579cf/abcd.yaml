@@ -4,8 +4,9 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: 5f507847-33a3-4064-9eb7-f42a3a63f2bd
-    workflow_id: a1e7bce3-915d-4042-9c3b-40f93abaa2a1
+    revision_id: 7bb338f2-0cfb-4bc9-ae24-b57bd012d963
+    subject: '{{workflow.parameters.appNamespace}}_kube-proxy'
+    workflow_id: cb7b8b10-0842-487c-9280-654eedb5c7ae
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: abcd
   namespace: litmus
@@ -14,9 +15,9 @@ spec:
     parameters:
     - name: adminModeNamespace
       value: litmus
-  entrypoint: abcd
-  podGC:
-    strategy: OnWorkflowCompletion
+    - name: appNamespace
+      value: kube-system
+  entrypoint: argowf-chaos
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
@@ -24,146 +25,101 @@ spec:
   templates:
   - inputs: {}
     metadata: {}
-    name: abcd
+    name: argowf-chaos
     outputs: {}
     steps:
     - - arguments: {}
         name: install-chaos-faults
         template: install-chaos-faults
     - - arguments: {}
-        name: k6-loadgen-clone-tlq
-        template: k6-loadgen-clone-tlq
+        name: pod-delete-9i8
+        template: pod-delete-9i8
     - - arguments: {}
         name: cleanup-chaos-resources
         template: cleanup-chaos-resources
   - container:
       args:
-      - kubectl apply -f /tmp/ -n {{workflow.parameters.adminModeNamespace}} && sleep
-        30
+      - kubectl apply -f /tmp/pod-delete.yaml -n {{workflow.parameters.adminModeNamespace}}
       command:
       - sh
       - -c
-      image: litmuschaos/k8s:2.11.0
+      image: litmuschaos/k8s:latest
       name: ""
       resources: {}
     inputs:
       artifacts:
-      - name: k6-loadgen-clone-tlq
-        path: /tmp/k6-loadgen-clone-tlq.yaml
+      - name: install-chaos-faults
+        path: /tmp/pod-delete.yaml
         raw:
           data: |
             apiVersion: litmuschaos.io/v1alpha1
             description:
               message: |
-                Execute the k6 engine using the JS script
+                Deletes a pod belonging to a deployment/statefulset/daemonset
             kind: ChaosExperiment
             metadata:
-              name: k6-loadgen-clone
-              labels:
-                name: k6-loadgen-clone
-                app.kubernetes.io/part-of: litmus
-                app.kubernetes.io/component: chaosexperiment
-                app.kubernetes.io/version: ci
+              name: pod-delete
             spec:
               definition:
                 scope: Namespaced
                 permissions:
                   - apiGroups:
                       - ""
+                      - "apps"
+                      - "batch"
+                      - "litmuschaos.io"
                     resources:
-                      - pods
+                      - "deployments"
+                      - "jobs"
+                      - "pods"
+                      - "pods/log"
+                      - "events"
+                      - "configmaps"
+                      - "chaosengines"
+                      - "chaosexperiments"
+                      - "chaosresults"
                     verbs:
-                      - create
-                      - delete
-                      - get
-                      - list
-                      - patch
-                      - update
-                      - deletecollection
+                      - "create"
+                      - "list"
+                      - "get"
+                      - "patch"
+                      - "update"
+                      - "delete"
                   - apiGroups:
                       - ""
                     resources:
-                      - events
+                      - "nodes"
                     verbs:
-                      - create
-                      - get
-                      - list
-                      - patch
-                      - update
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - secrets
-                      - configmaps
-                    verbs:
-                      - get
-                      - list
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - pods/log
-                    verbs:
-                      - get
-                      - list
-                      - watch
-                  - apiGroups:
-                      - ""
-                    resources:
-                      - pods/exec
-                    verbs:
-                      - get
-                      - list
-                      - create
-                  - apiGroups:
-                      - batch
-                    resources:
-                      - jobs
-                    verbs:
-                      - create
-                      - list
-                      - get
-                      - delete
-                      - deletecollection
-                  - apiGroups:
-                      - litmuschaos.io
-                    resources:
-                      - chaosengines
-                      - chaosexperiments
-                      - chaosresults
-                    verbs:
-                      - create
-                      - list
-                      - get
-                      - patch
-                      - update
-                      - delete
-                image: litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest
+                      - "get"
+                      - "list"
+                image: "litmuschaos.docker.scarf.sh/litmuschaos/go-runner:latest"
                 imagePullPolicy: Always
                 args:
-                  - -c
-                  - ./experiments -name k6-loadgen
+                - -c
+                - ./experiments -name pod-delete
                 command:
-                  - /bin/bash
+                - /bin/bash
                 env:
-                  - name: TOTAL_CHAOS_DURATION
-                    value: "30"
-                  - name: CHAOS_INTERVAL
-                    value: "30"
-                  - name: RAMP_TIME
-                    value: "0"
-                  - name: SCRIPT_SECRET_NAME
-                    value: k6-script
-                  - name: SCRIPT_SECRET_KEY
-                    value: script.js
-                  - name: LIB_IMAGE
-                    value: ghcr.io/grafana/k6-operator:latest-runner
-                  - name: LIB_IMAGE_PULL_POLICY
-                    value: Always
+
+                - name: TOTAL_CHAOS_DURATION
+                  value: '15'
+
+                # Period to wait before and after injection of chaos in sec
+                - name: RAMP_TIME
+                  value: ''
+
+                # provide the kill count
+                - name: KILL_COUNT
+                  value: ''
+
+                - name: FORCE
+                  value: 'true'
+
+                - name: CHAOS_INTERVAL
+                  value: '5'
+
                 labels:
-                  name: k6-loadgen-clone
-                  app.kubernetes.io/part-of: litmus
-                  app.kubernetes.io/component: experiment-job
-                  app.kubernetes.io/version: ci
+                  name: pod-delete
     metadata: {}
     name: install-chaos-faults
     outputs: {}
@@ -173,7 +129,7 @@ spec:
       command:
       - sh
       - -c
-      image: litmuschaos/k8s:2.11.0
+      image: litmuschaos/k8s:latest
       name: ""
       resources: {}
     inputs: {}
@@ -182,15 +138,15 @@ spec:
     outputs: {}
   - container:
       args:
-      - -file=/tmp/chaosengine-k6-loadgen-clone-tlq.yaml
+      - -file=/tmp/chaosengine-pod-delete-9i8.yaml
       - -saveName=/tmp/engine-name
       image: docker.io/litmuschaos/litmus-checker:2.11.0
       name: ""
       resources: {}
     inputs:
       artifacts:
-      - name: k6-loadgen-clone-tlq
-        path: /tmp/chaosengine-k6-loadgen-clone-tlq.yaml
+      - name: pod-delete-9i8
+        path: /tmp/chaosengine-pod-delete-9i8.yaml
         raw:
           data: |
             apiVersion: litmuschaos.io/v1alpha1
@@ -201,34 +157,44 @@ spec:
                 workflow_run_id: "{{ workflow.uid }}"
                 workflow_name: abcd
               annotations:
-                probeRef: '[{"name":"nginx-health-check","mode":"SOT"}]'
-              generateName: k6-loadgen-clone-tlq
+                probeRef: '[{"name":"nginx-health-check","mode":"Continuous"}]'
+              generateName: pod-delete-9i8
             spec:
+              appinfo:
+                appns: ""
+                applabel: ""
+                appkind: ""
               engineState: active
               chaosServiceAccount: litmus-admin
               experiments:
-                - name: k6-loadgen-clone
+                - name: pod-delete
                   spec:
                     components:
                       env:
                         - name: TOTAL_CHAOS_DURATION
-                          value: "30"
-                        - name: CHAOS_INTERVAL
-                          value: "30"
+                          value: "15"
                         - name: RAMP_TIME
-                          value: "0"
-                        - name: SCRIPT_SECRET_NAME
-                          value: k6-script
-                        - name: SCRIPT_SECRET_KEY
-                          value: script.js
-                        - name: LIB_IMAGE
-                          value: ghcr.io/grafana/k6-operator:latest-runner
-                        - name: LIB_IMAGE_PULL_POLICY
-                          value: Always
+                          value: ""
+                        - name: FORCE
+                          value: "true"
+                        - name: CHAOS_INTERVAL
+                          value: "5"
+                        - name: PODS_AFFECTED_PERC
+                          value: ""
+                        - name: TARGET_CONTAINER
+                          value: ""
+                        - name: TARGET_PODS
+                          value: ""
+                        - name: DEFAULT_HEALTH_CHECK
+                          value: "false"
+                        - name: NODE_LABEL
+                          value: ""
+                        - name: SEQUENCE
+                          value: parallel
     metadata:
       labels:
         weight: "10"
-    name: k6-loadgen-clone-tlq
+    name: pod-delete-9i8
     outputs: {}
 status:
   finishedAt: null
