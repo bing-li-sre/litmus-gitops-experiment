@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: 7bb338f2-0cfb-4bc9-ae24-b57bd012d963
+    revision_id: 8fbb8776-c29f-494e-8eaa-aaf53deffa21
     subject: '{{workflow.parameters.appNamespace}}_kube-proxy'
     workflow_id: cb7b8b10-0842-487c-9280-654eedb5c7ae
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
