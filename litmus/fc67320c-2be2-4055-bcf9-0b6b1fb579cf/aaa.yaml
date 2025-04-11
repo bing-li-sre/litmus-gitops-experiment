@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: f9f63137-e0f2-4e2e-8d59-b948c6037a97
+    revision_id: aa25b3a3-7c55-494d-957b-4d92247d1506
     workflow_id: 4906072c-1fca-40da-93b6-5d6a14bac3ed
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: aaa
@@ -344,6 +344,7 @@ spec:
                 probeRef: '[{"name":"nginx-health-check","mode":"Continuous"}]'
               generateName: gcp-vm-instance-stop-kpn
             spec:
+              jobCleanUpPolicy: retain
               engineState: active
               chaosServiceAccount: litmus-admin
               experiments:
