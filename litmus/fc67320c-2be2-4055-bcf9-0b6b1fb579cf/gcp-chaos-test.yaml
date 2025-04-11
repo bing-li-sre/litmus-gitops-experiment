@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     infra_id: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
-    revision_id: db284488-c3ad-414e-9efe-b6c96722b7f5
+    revision_id: 0bc5adf4-8410-493f-b7de-1413d20f675d
     workflow_id: 07d4bf98-15fd-4b57-a9f6-321500899511
     workflows.argoproj.io/controller-instanceid: 446420e7-e7fa-4af7-b7e3-97dbde7e0114
   name: gcp-chaos-test
